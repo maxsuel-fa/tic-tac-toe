@@ -6,7 +6,7 @@ This is an implementation of the game Tic-Tac-Toe made for the college subject "
 
 Here we will place an sumary of our project's funtionality.
 
-## Groupe
+## Group
 
 * Gabriel here
 * Gustavo here
