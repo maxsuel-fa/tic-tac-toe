@@ -15,5 +15,4 @@ Here we will place an sumary of our project's funtionality.
 
 ## Report
 
-The report of this project can be found at []()
-
+The report of this project can be found at [REPORT.md](https://github.com/maxsuel-fa/Tic-Tac-Toe/blob/main/report/REPORT.md)
