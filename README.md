@@ -8,7 +8,7 @@ Here we will place an sumary of our project's funtionality.
 
 ## Group
 
-* Gabriel here
+* Gabriel Vinícius dos Santos - 11819424
 * Gustavo here
 * Lucas Alves Roris - 11913771
 * Maxsuel Fernandes de Almeida - 11801028
