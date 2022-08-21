@@ -10,7 +10,7 @@ Here we will place an sumary of our project's funtionality.
 
 * Gabriel here
 * Gustavo here
-* Lucas here
+* Lucas Alves Roris - 11913771
 * Maxsuel Fernandes de Almeida - 11801028
 
 ## Report
