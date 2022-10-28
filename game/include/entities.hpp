@@ -17,7 +17,7 @@ class Drawable
 
 public:
     Drawable() = default;
-    Drawable(SDL_Renderer* const&, std::string const&,
+    Drawable(SDL_Texture* const&, 
              int const&, int const&,
              int const&, int const&);
 

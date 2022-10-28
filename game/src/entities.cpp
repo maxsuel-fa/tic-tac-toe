@@ -2,11 +2,11 @@
 
 /* Implementation of the methods of the Drawable class */
 
-Drawable::Drawable(SDL_Renderer* const& renderer, std::string const& path,
+Drawable::Drawable(SDL_Texture* const& texture
                    int const& x, int const& y,
                    int const& width, int const& height)
-    : texture_(IMG_LoadTexture(renderer, path.c_str()))
-    , clipRect_{ NULL }
+    : texture_(texture)
+    , clipRect_(NULL)
     , x_(x)
     , y_(y)
     , width_(width)
