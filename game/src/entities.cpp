@@ -2,11 +2,11 @@
 
 /* Implementation of the methods of the Drawable class */
 
-Drawable::Drawable(SDL_Texture* const& texture
+Drawable::Drawable(SDL_Texture* const& texture,
                    int const& x, int const& y,
                    int const& width, int const& height)
     : texture_(texture)
-    , clipRect_(NULL)
+    , clipRect_(nullptr)
     , x_(x)
     , y_(y)
     , width_(width)
@@ -72,13 +72,13 @@ SDL_Texture* const& Drawable::texture(void)
  */
 void Drawable::clipRect(SDL_Rect const& clipRect)
 {
-    clipRect_ = clipRect;
+    *clipRect_ = clipRect;
 }
 
 /*
  * @brief
  */
-SDL_Rect const& Drawable::clipRect(void)
+SDL_Rect* const& Drawable::clipRect(void)
 {
     return clipRect_;
 }
@@ -88,18 +88,18 @@ SDL_Rect const& Drawable::clipRect(void)
  */
 void Drawable::draw(SDL_Renderer* const& renderer)
 {
-    SDL_Rect destRect{x_, y_, clipRect_.w, clipRect_.h};
-    SDL_RenderCopy(renderer, texture_, &clipRect_, &destRect);
+    SDL_Rect destRect{x_, y_, width_, height_};
+    SDL_RenderCopy(renderer, texture_, clipRect_, &destRect);
 }
 
 /* 
  * Implementation of the Board class' methods 
  */
 
-Board::Board(SDL_Renderer* const& renderer, std::string const& path,
+Board::Board(SDL_Texture* const& texture,
              int const& x, int const& y,
              int const& width, int const& height)
-    : Drawable::Drawable(renderer, path, width, height, x, y)
+    : Drawable::Drawable(texture, width, height, x, y)
     , boardMatrix_(3, 3)
 {
     boardMatrix_.zeros();

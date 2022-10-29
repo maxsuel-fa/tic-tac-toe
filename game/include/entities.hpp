@@ -9,7 +9,7 @@
 class Drawable
 {
     SDL_Texture* texture_;
-    SDL_Rect clipRect_;
+    SDL_Rect* clipRect_;
     int x_;
     int y_;
     int width_;
@@ -29,7 +29,7 @@ public:
     void texture(SDL_Texture* const&);
     SDL_Texture* const& texture(void);
     void clipRect(SDL_Rect const& clipRect);
-    SDL_Rect const& clipRect(void);
+    SDL_Rect* const& clipRect(void);
 };
 
 class Board: public Drawable
@@ -38,7 +38,7 @@ class Board: public Drawable
 
 public:
     Board() = default;
-    Board(SDL_Renderer* const&, std::string const&,
+    Board(SDL_Texture* const&,
           int const&, int const&,
           int const&, int const&);
     Matrix& boardMatrix(void);
