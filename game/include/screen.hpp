@@ -19,10 +19,12 @@ public:
 
     std::vector<Drawable>& elements(void);
     void draw(SDL_Renderer* const&);
+    void draw(SDL_Renderer* const&, Uint32 const&);
 };
 
 /* A set o functions to initialize each screen */
-std::vector<Drawable> menuScreenInit(int const&, int const&,
-                                     SDL_Renderer*, TTF_Font*, SDL_Color const&);
-
+std::vector<Drawable> menuScreenInit(int const&, int const&, SDL_Renderer*);
+std::vector<Drawable> waitingScreenInit(int const&, int const&, SDL_Renderer*);
+std::pair<int, int> text2Texture(SDL_Texture**, std::string const&, TTF_Font*,
+                                 SDL_Color const&, SDL_Renderer*);
 #endif

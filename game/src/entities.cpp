@@ -1,6 +1,8 @@
 #include "../include/entities.hpp"
 
-/* Implementation of the methods of the Drawable class */
+/*******************************************************************************
+ *                Implementation of the Drawable class' methods                *
+ *******************************************************************************/
 
 Drawable::Drawable(SDL_Texture* const& texture,
                    int const& x, int const& y,
@@ -23,7 +25,7 @@ void Drawable::x(int const& x)
 
 /*
  * @brief gets the value of the x coordinate attribute
- * @return double reference to the x coordinate attribute
+ * @return int reference to the x coordinate attribute
  */
 int const& Drawable::x()
 {
@@ -41,21 +43,56 @@ void Drawable::y(int const& y)
 
 /*
  * @brief gets the value of the y coordinate attribute
- * @return double reference to the y coordinate attribute
+ * @return int reference to the y coordinate attribute
  */
 int const& Drawable::y()
 {
     return y_;
 }
 
+/*
+ * @brief sets a new value to the width attribute
+ * @param width the value to be assigned to the width
+ */
+void Drawable::width(int const& width)
+{
+    width_ = width;
+}
+
+/*
+ * @brief gets the value of the width attribute
+ * @return int reference to the width attribute
+ */
+int const& Drawable::width(void)
+{
+    return width_;
+}
+
+/*
+ * @brief sets a new value to the height attribute
+ * @param width the value to be assigned to the height
+ */
+void Drawable::height(int const& height)
+{
+    height_ = height;
+}
+
+/*
+ * @brief gets the value of the height attribute
+ * @return int reference to the height attribute
+ */
+int const& Drawable::height(void)
+{
+    return height_;
+}
 
 /*
  * @brief sets a texture for the drawable object
  * @param texture texture to be assigned to the texture attribute
  */
-void Drawable::texture(SDL_Texture* const& texture)
+void Drawable::texture(SDL_Texture** texture)
 {
-    texture_ = texture;
+    texture_ = *texture;
 }
 
 /*
@@ -92,10 +129,78 @@ void Drawable::draw(SDL_Renderer* const& renderer)
     SDL_RenderCopy(renderer, texture_, clipRect_, &destRect);
 }
 
-/* 
- * Implementation of the Board class' methods 
- */
+/*******************************************************************************
+ *                Implementation of the DrawableText class' methods            *
+ *******************************************************************************/
 
+/*
+ * @brief Given a text, create a drawable object with it
+ * @param renderer renderer of the current window
+ * @param text text to be drawn
+ * @param font font to use for the text
+ * @param color color to use in the drawing of the text
+ * @param x the x coordinate for drawing
+ * @param y the y coordinate for drawing
+ * @param width the width of the object
+ * @para height the height of the object
+ */
+DrawableText::DrawableText(SDL_Renderer* renderer,
+                           std::string const& text, TTF_Font* font, SDL_Color const& color,
+                           int const& x, int const& y)
+    : text_(text)
+{
+    // Creating a surface using text for the object
+    SDL_Surface* surface;
+    surface = TTF_RenderText_Solid(font, text.c_str(), color);
+    SDL_Texture* texture;
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    Drawable::texture(&texture);
+
+    // Initializing the sizes attributes of the object
+    Drawable::x(x);
+    Drawable::y(y);
+    Drawable::width(surface->w);
+    Drawable::height(surface->h);
+
+    // Freeing the surface used to creat the object's texture
+    SDL_FreeSurface(surface);
+}
+
+/*
+ * @brief sets a new text for the object
+ * @param text new text to be assigned to the object
+ */
+void DrawableText::text(std::string const& text, SDL_Renderer* renderer,
+                        TTF_Font* font, SDL_Color const& color)
+{
+    text_ = text;
+
+    // Always the text changes, its texture should also be changed
+    SDL_Surface* surface;
+    surface = TTF_RenderText_Solid(font, text.c_str(), color);
+    SDL_Texture* texture;
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    Drawable::texture(&texture);
+    Drawable::width(surface->w);
+    Drawable::height(surface->h);
+
+    // Freeing the surface used to update the texture of the object
+    SDL_FreeSurface(surface);
+}
+
+/*
+ * @brief gets the attribute text of the object
+ * @return string the attribute text
+ */
+std::string const& DrawableText::text(void)
+{
+    return text_;
+}
+
+
+/*******************************************************************************
+ *                Implementation of the Board class' methods                   *
+ *******************************************************************************/
 Board::Board(SDL_Texture* const& texture,
              int const& x, int const& y,
              int const& width, int const& height)

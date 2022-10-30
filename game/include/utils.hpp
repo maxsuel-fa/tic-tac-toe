@@ -1,5 +1,8 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
+#include <iostream>
+#include <string>
+#include <SDL2/SDL_ttf.h>
 
 class Matrix
 {
@@ -15,4 +18,6 @@ private:
     int column_;
     int** data_;
 };
+
+void loadFont(TTF_Font**, std::string const&, int const&);
 #endif
