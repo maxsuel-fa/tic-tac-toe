@@ -7,8 +7,11 @@
 #include <iostream>
 #include <thread>
 
+#include "../include/entities.hpp"
+
 // Global variables
 struct sockaddr_in address;
+int matchesCount;
 
 int main(int argc, char *argv[]) {
     std::cout << "Bem-vindo ao Tic-Tac-Toe! :)" << std::endl;
@@ -38,13 +41,38 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    std::cout << "Servidor escutando, aguardando pela conexão de clientes..." << std::endl;
+    std::cout << "Servidor escutando, aguardando pela conexão de clientes...";
+    std::cout << std::endl;
 
-    int client_socket = accept(socketd, 0, 0);
+    Match *matches[10];      // Game matches
+    std::thread threads[10]; // Threads that will run the game matches
 
-    if(client_socket == -1) {
-        std::cout << std::endl << "Erro na funcao accept()" << std::endl;
-        return 1;
+    int player1Socket;
+    int player2Socket;
+
+    matchesCount = 0;
+
+    while(1) {
+        std::cout << std::endl;
+        cout << "Partida %d: Aguardando pela conexão do Player1", matchesCount;
+        std::cout << std::endl;
+
+        player1Socket = accept(socketd, 0, 0);
+
+        std::cout << std::endl;
+        cout << "Partida %d: Aguardando pela conexão do Player2", matchesCount;
+        std::cout << std::endl;
+
+        player2Socket = accept(socketd, 0, 0);
+
+        if(player1Socket == -1 || player2Socket == -1) {
+            std::cout << std::endl << "Erro na funcao accept()" << std::endl;
+            return 1;
+        }
+
+        matches[matchesCount] = createMatch(player1Socket, player2Socket);
+
+        matchesCount++;
     }
 
     shutdown(socketd, SHUT_RDWR); // Closes the listening socket
