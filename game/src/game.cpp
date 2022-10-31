@@ -70,6 +70,7 @@ int main(void)
 
     // Communication Handler
     CommunicationHandler cHandler;
+    cHandler.connectWithServer();
 
     // Instantiating the screens of the game
     Screen menuScreen(menuScreenInit(windowWidth, windowHeight, renderer));
@@ -86,8 +87,8 @@ int main(void)
                       std::ref(player), std::ref(send));
     std::thread tRecv(&CommunicationHandler::receiveChange, std::ref(cHandler),
                       std::ref(player), std::ref(recv));
-    //std::thread tWait(&CommunicationHandler::waitOpponent, std::ref(cHandler),
-    //                  std::ref(player));
+    std::thread tWait(&CommunicationHandler::waitOpponent, std::ref(cHandler),
+                      std::ref(player));
     // Game loop
     SDL_bool close(SDL_FALSE);
     SDL_Event event;
