@@ -40,9 +40,10 @@ void Screen::draw(SDL_Renderer* const& renderer, Uint32 const& delay)
 
 /*
  * @brief Function to create all elements of the menu screen
- * @param renderer
- * @param font used in the game
- * @return vector containing all the elements of the menu screen
+ * @param windowWidth width of the current window
+ * @param windowHeight height of the current window
+ * @param renderer renderer of the current window
+ * @return vector list of all the elements of the menu screen
  */
 std::vector<Drawable> menuScreenInit(int const& windowWidth, int const& windowHeight,
                                      SDL_Renderer* renderer)
@@ -109,6 +110,13 @@ std::vector<Drawable> menuScreenInit(int const& windowWidth, int const& windowHe
     return elements;
 }
 
+/*
+ * @brief Function to create all elements of the waiting screen
+ * @param windowWidth width of the current window
+ * @param windowHeight height of the current window
+ * @param renderer renderer of the current window
+ * @return vector list of elements to the waiting screen
+ */
 std::vector<Drawable> waitingScreenInit(int const& windowWidth, int const& windowHeight,
                                         SDL_Renderer* renderer)
 {
@@ -123,49 +131,130 @@ std::vector<Drawable> waitingScreenInit(int const& windowWidth, int const& windo
     color = {0xFF, 0xFF, 0xFF};
 
     // Defining the waiting message text
-    std::string text("Waiting For Enemy");
+    std::string text("Waiting For Opponent");
 
     // Creating a drawable waiting message
     SDL_Texture* waitingTexture;
     std::pair<int, int> sizes;
     sizes = text2Texture(&waitingTexture, text, font, color, renderer);
-    Drawable waitingMsg(waitingTexture, 0, 0, sizes.first, sizes.second);
+    Drawable waitingMsg(waitingTexture, 0, 56, sizes.first, sizes.second);
 
     // Defining coordinates for the waiting message
     waitingMsg.x(((windowWidth - waitingMsg.width()) / 2));
-    waitingMsg.y(56);
 
     text.clear();
     text.push_back('.');
 
+    // Creating three drawable dots to animete the waiting screen
     SDL_Texture* dotTexture;
+
+    // First dor
     sizes = text2Texture(&dotTexture, text, font, color, renderer);
     Drawable firstDot(dotTexture, 0, 0, sizes.first, sizes.second);
+    // Defining the first dot coordinates
     firstDot.x(waitingMsg.x() + waitingMsg.width() + 14);
     firstDot.y(waitingMsg.y());
 
+    // Second dot
     Drawable secondDot(dotTexture, 0, 0, sizes.first, sizes.second);
+    // Defining the second dot coorinates
     secondDot.x(firstDot.x() + 14);
     secondDot.y(waitingMsg.y());
 
+    // Third dot
     Drawable thirdDot(dotTexture, 0, 0, sizes.first, sizes.second);
+    // Defining the third dot coordinates
     thirdDot.x(secondDot.x() + 14);
     thirdDot.y(waitingMsg.y());
 
     // Closing the font since it will not be used anymore
     TTF_CloseFont(font);
 
-    elements.push_back((Drawable)waitingMsg);
-    elements.push_back((Drawable)firstDot);
-    elements.push_back((Drawable)secondDot);
-    elements.push_back((Drawable)thirdDot);
+    // Pushing the elements to the screen's elements list
+    elements.push_back(waitingMsg);
+    elements.push_back(firstDot);
+    elements.push_back(secondDot);
+    elements.push_back(thirdDot);
 
     return elements;
 
 }
 
-std::pair<int, int> text2Texture(SDL_Texture** texture, std::string const& text, TTF_Font* font, 
-        SDL_Color const& color, SDL_Renderer* renderer)
+/*
+ * @brief Function to create all elements of the playing screen
+ * @param windowWidth width of the current window
+ * @param windowHeight height of the current window
+ * @param renderer renderer of the current window
+ * @return vector list of elements to the playing screen
+ */
+std::vector<Drawable> playingScreenInit(int const& windowWidth, int const& windowHeight,
+                                        SDL_Renderer* renderer)
+{
+    std::vector<Drawable> elements;
+
+    // Loading the grid from a PNG
+    std::string const gridPath("../textures/grid2white.png");
+    SDL_Texture* gridTexture;
+    gridTexture = IMG_LoadTexture(renderer, gridPath.c_str());
+
+    // Defining coordinates and sizes for the grid
+    int const gridWidth(600);
+    int const gridHeight(600);
+    int const gridX((windowWidth - gridWidth) / 2);
+    int const gridY((windowHeight - gridHeight) / 2);
+
+    // Creating a drawable grid
+    Drawable grid(gridTexture, gridX, gridY, gridWidth, gridHeight);
+
+    // Loading font to write in the playing screen
+    TTF_Font* font;
+    loadFont(&font, "../font/BadMofo.ttf", 60);
+
+    // Color to render the texts
+    SDL_Color color;
+    color = {0xFF, 0xFF, 0xFF};
+
+    // Opponent header text
+    std::string text("Opponent: ");
+
+    // Creating a drawable opponent header
+    SDL_Texture* opHeaderTexture;
+    std::pair<int, int> sizes;
+    sizes = text2Texture(&opHeaderTexture, text, font, color, renderer);
+    int const opHeaderX(gridX);
+    int const opHeaderY(gridY + gridHeight + 14);
+    Drawable opponentHeader(opHeaderTexture, opHeaderX, opHeaderY,
+                            sizes.first, sizes.second);
+
+    // Player header
+    text.clear();
+    text.append("You: ");
+
+    // Creating a drawable player header
+    SDL_Texture* plHeaderTexture;
+    sizes = text2Texture(&plHeaderTexture, text, font, color, renderer);
+    int const plHeaderX(gridX);
+    int const plHeaderY(gridX - sizes.second - 14);
+    Drawable playerHeader(plHeaderTexture, plHeaderX, plHeaderY,
+                          sizes.first, sizes.second);
+
+    // Pushing the created elements to the playing screen's list of elements
+    elements.push_back(opponentHeader);
+    elements.push_back(grid);
+    elements.push_back(playerHeader);
+
+    return elements;
+}
+/*
+ * @brief Given a text, a font and a color, build a texture with such text
+ * @param texture parameter that will hold the built texture
+ * @para font pointer to the font to be used in the texture building
+ * @param color color to be used in the texture building
+ * @param renderer renderer of the current window
+ * @return pair pair of ints containing the texture width and height
+ */
+std::pair<int, int> text2Texture(SDL_Texture** texture, std::string const& text, TTF_Font* font,
+                                 SDL_Color const& color, SDL_Renderer* renderer)
 {
     SDL_Surface* surface;
     surface = TTF_RenderText_Solid(font, text.c_str(), color);
@@ -173,5 +262,6 @@ std::pair<int, int> text2Texture(SDL_Texture** texture, std::string const& text,
 
     std::pair<int, int> sizes(surface->w, surface->h);
     SDL_FreeSurface(surface);
+
     return sizes;
 }

@@ -219,26 +219,28 @@ Matrix& Board::boardMatrix()
     return boardMatrix_;
 }
 
-/* Implementation of the Player class' methods */
 
-Player::Player(std::string const& name, int const& number)
-    : name_(name)
-    , number_(number) {}
+/*******************************************************************************
+ *                Implementation of the Player class' methods                  *
+ *******************************************************************************/
+
+Player::Player(std::string const& symbol)
+    : symbol_(symbol) {}
 
 /*
- * @brief sets the name attribute of the player
- * @param name new name to be assigned to the player
+ * @brief sets the symbol attribute for the player
+ * @param symbol new symbol to be assigned to the player
  */
-void Player::name(std::string const& name)
+void Player::symbol(std::string const& symbol)
 {
-    name_ = name;
+    symbol_ = symbol;
 }
 
 /*
- * @brief gets the name attribute of the player
- * @return string& reference for the name attribute
+ * @brief gets the symbol attribute of the player
+ * @return string& reference to the symbol attribute
  */
-std::string const& Player::name()
+std::string const& Player::symbol()
 {
-    return name_;
+    return symbol_;
 }
