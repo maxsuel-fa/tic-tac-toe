@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     int opt = 1;
     int socketopt = setsockopt(
                         socketd,
-                        IPPROTO_TCP,
+                        SOL_SOCKET,
                         SO_REUSEADDR | SO_REUSEPORT,
                         &opt,
                         sizeof(opt)
