@@ -66,27 +66,30 @@ void Match::gameLoop()
 
     while (1)
     {
+        move[0] = '\0';
         switch (currentPlayer)
         {
         case 1:
-            received = recv(player1Socket, move, 5, 0);
-
-            if (received == -1)
-            {
-                std::cout << std::endl;
-                std::cout << "O Player1 se desconectou do servidor!";
-                std::cout << std::endl << "Portanto, o Player2 venceu.";
-                std::cout << std::endl;
-
-                char gameOverMess[5]; // Game over message, to let the client
-                // know that his enemy lost due to
-                // disconnect from server
-                gameOverMess[0] = 'W'; // Player2 has won
-                gameOverMess[1] = 'D'; // Due to Disconnect from server
-                gameOverMess[2] = '\0';
-
-                send(player2Socket, gameOverMess, 5, 0);
+            while(move[0] == '\0') {
+                received = recv(player1Socket, move, 5, 0);
             }
+
+            // if (received == -1)
+            // {
+            //     std::cout << std::endl;
+            //     std::cout << "O Player1 se desconectou do servidor!";
+            //     std::cout << std::endl << "Portanto, o Player2 venceu.";
+            //     std::cout << std::endl;
+
+            //     char gameOverMess[5]; // Game over message, to let the client
+            //     // know that his enemy lost due to
+            //     // disconnect from server
+            //     gameOverMess[0] = 'W'; // Player2 has won
+            //     gameOverMess[1] = 'D'; // Due to Disconnect from server
+            //     gameOverMess[2] = '\0';
+
+            //     send(player2Socket, gameOverMess, 5, 0);
+            // }
 
             moveLine = atoi(&move[1]);
             moveCol = atoi(&move[2]);
@@ -103,24 +106,26 @@ void Match::gameLoop()
             break;
 
         case 2:
-            received = recv(player2Socket, move, 5, 0);
-
-            if (received == -1)
-            {
-                std::cout << std::endl;
-                std::cout << "O Player2 se desconectou do servidor!";
-                std::cout << std::endl << "Portanto, o Player1 venceu.";
-                std::cout << std::endl;
-
-                char gameOverMess[5]; // Game over message, to let the client
-                // know that his enemy lost due to
-                // disconnect from server
-                gameOverMess[0] = 'W'; // Player1 has won
-                gameOverMess[1] = 'D'; // Due to Disconnect from server
-                gameOverMess[2] = '\0';
-
-                send(player1Socket, gameOverMess, 5, 0);
+            while(move[0] == '\0') {
+                received = recv(player2Socket, move, 5, 0);
             }
+
+            // if (received == -1)
+            // {
+            //     std::cout << std::endl;
+            //     std::cout << "O Player2 se desconectou do servidor!";
+            //     std::cout << std::endl << "Portanto, o Player1 venceu.";
+            //     std::cout << std::endl;
+
+            //     char gameOverMess[5]; // Game over message, to let the client
+            //     // know that his enemy lost due to
+            //     // disconnect from server
+            //     gameOverMess[0] = 'W'; // Player1 has won
+            //     gameOverMess[1] = 'D'; // Due to Disconnect from server
+            //     gameOverMess[2] = '\0';
+
+            //     send(player1Socket, gameOverMess, 5, 0);
+            // }
 
             moveLine = atoi(&move[1]);
             moveCol = atoi(&move[2]);
