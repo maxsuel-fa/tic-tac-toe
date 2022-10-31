@@ -8,6 +8,7 @@
 #include <thread>
 
 #include "../include/entities.hpp"
+#include "../include/utils.hpp"
 
 // Global variables
 struct sockaddr_in address;
@@ -22,6 +23,20 @@ int main(int argc, char *argv[]) {
 
     if(socketd == -1) {
         std::cout << std::endl << "Erro ao criar socket!" << std::endl;
+        return 1;
+    }
+
+    int opt = 1;
+    int socketopt = setsockopt(
+        socketd,
+        IPPROTO_TCP,
+        SO_REUSEADDR | SO_REUSEPORT,
+        &opt,
+        sizeof(opt)
+    );
+
+    if(socketopt == -1) {
+        std::cout << std::endl << "Erro ao configurar o socket!" << std::endl;
     }
 
     address.sin_family = AF_INET; // Address family
@@ -54,13 +69,13 @@ int main(int argc, char *argv[]) {
 
     while(1) {
         std::cout << std::endl;
-        cout << "Partida %d: Aguardando pela conexão do Player1", matchesCount;
+        std::cout << "Partida %d: Aguardando pela conexão do Player1", matchesCount;
         std::cout << std::endl;
 
         player1Socket = accept(socketd, 0, 0);
 
         std::cout << std::endl;
-        cout << "Partida %d: Aguardando pela conexão do Player2", matchesCount;
+        std::cout << "Partida %d: Aguardando pela conexão do Player2", matchesCount;
         std::cout << std::endl;
 
         player2Socket = accept(socketd, 0, 0);
@@ -70,9 +85,11 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 
-        matches[matchesCount] = createMatch(player1Socket, player2Socket);
-
-        matchesCount++;
+        if(matchesCount < 10) {
+            matches[matchesCount] = createMatch(player1Socket, player2Socket);
+            threads[matchesCount](matches[matchesCount]->gameLoop());
+            matchesCount++;
+        }
     }
 
     shutdown(socketd, SHUT_RDWR); // Closes the listening socket
