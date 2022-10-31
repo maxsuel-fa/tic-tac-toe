@@ -14,7 +14,7 @@
 #define OK "#"
 // Global variables
 struct sockaddr_in address;
-int matchesCount;
+// int matchesCount;
 
 int main(int argc, char *argv[])
 {
@@ -66,24 +66,26 @@ int main(int argc, char *argv[])
     std::cout << "Servidor escutando, aguardando pela conexão de clientes...";
     std::cout << std::endl;
 
-    Match *matches[10];      // Game matches
-    std::thread threads[10]; // Threads that will run the game matches
+    // Match *matches[10];      // Game matches
+    // std::thread threads[10]; // Threads that will run the game matches
 
     int player1Socket;
     int player2Socket;
 
-    matchesCount = 0;
+    // matchesCount = 0;
 
     while (1)
     {
         std::cout << std::endl;
-        std::cout << "Partida " <<  matchesCount << ": Aguardando pela conexão do Player1";
+        // std::cout << "Partida " <<  matchesCount << ": Aguardando pela conexão do Player1";
+        std::cout << "Aguardando pela conexão do Player1";
         std::cout << std::endl;
 
         player1Socket = accept(socketd, 0, 0);
 
         std::cout << std::endl;
-        std::cout << "Partida " <<  matchesCount << ": Aguardando pela conexão do Player2";
+        // std::cout << "Partida " <<  matchesCount << ": Aguardando pela conexão do Player2";
+        std::cout << "Aguardando pela conexão do Player2";
         std::cout << std::endl;
 
         player2Socket = accept(socketd, 0, 0);
@@ -94,12 +96,16 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        if (matchesCount < 10)
-        {
-            matches[matchesCount] = createMatch(player1Socket, player2Socket);
-            threads[matchesCount] = std::thread(&Match::gameLoop, std::ref(matches[matchesCount]));
-            matchesCount++;
-        }
+        Match *gameMatch = createMatch(player1Socket, player2Socket);
+
+        gameMatch->gameLoop();
+
+        // if (matchesCount < 10)
+        // {
+        //     matches[matchesCount] = createMatch(player1Socket, player2Socket);
+        //     threads[matchesCount] = std::thread(&Match::gameLoop, std::ref(matches[matchesCount]));
+        //     matchesCount++;
+        // }
     }
 
     shutdown(socketd, SHUT_RDWR); // Closes the listening socket
