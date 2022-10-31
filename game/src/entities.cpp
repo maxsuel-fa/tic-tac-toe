@@ -201,23 +201,23 @@ std::string const& DrawableText::text(void)
 /*******************************************************************************
  *                Implementation of the Board class' methods                   *
  *******************************************************************************/
-Board::Board(SDL_Texture* const& texture,
-             int const& x, int const& y,
-             int const& width, int const& height)
-    : Drawable::Drawable(texture, width, height, x, y)
-    , boardMatrix_(3, 3)
-{
-    boardMatrix_.zeros();
-}
+//Board::Board(SDL_Texture* const& texture,
+//             int const& x, int const& y,
+//             int const& width, int const& height)
+//    : Drawable::Drawable(texture, width, height, x, y)
+//    , boardMatrix_(3, 3)
+//{
+//    boardMatrix_.zeros();
+//}
 
 /*
  * @brief gets the matrix data structure of the board
  * @return Matrix& reference to the board matrix
  */
-Matrix& Board::boardMatrix()
-{
-    return boardMatrix_;
-}
+//Matrix& Board::boardMatrix()
+//{
+//    return boardMatrix_;
+//}
 
 
 /*******************************************************************************

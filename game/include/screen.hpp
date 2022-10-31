@@ -2,6 +2,7 @@
 #define SCREEN_HPP
 #include <vector>
 #include "entities.hpp"
+#include "utils.hpp"
 #include <SDL2/SDL_ttf.h>
 
 /*

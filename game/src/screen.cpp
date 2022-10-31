@@ -217,21 +217,22 @@ std::vector<Drawable> playingScreenInit(int const& windowWidth, int const& windo
     // Opponent header text
     std::string text("Opponent: ");
 
+    /*
     // Creating a drawable opponent header
     SDL_Texture* opHeaderTexture;
-    std::pair<int, int> sizes;
     sizes = text2Texture(&opHeaderTexture, text, font, color, renderer);
     int const opHeaderX(gridX);
     int const opHeaderY(gridY + gridHeight + 14);
     Drawable opponentHeader(opHeaderTexture, opHeaderX, opHeaderY,
                             sizes.first, sizes.second);
-
+    */
     // Player header
     text.clear();
     text.append("You: ");
 
     // Creating a drawable player header
     SDL_Texture* plHeaderTexture;
+    std::pair<int, int> sizes;
     sizes = text2Texture(&plHeaderTexture, text, font, color, renderer);
     int const plHeaderX(gridX);
     int const plHeaderY(gridX - sizes.second - 14);
@@ -239,7 +240,7 @@ std::vector<Drawable> playingScreenInit(int const& windowWidth, int const& windo
                           sizes.first, sizes.second);
 
     // Pushing the created elements to the playing screen's list of elements
-    elements.push_back(opponentHeader);
+    //elements.push_back(opponentHeader);
     elements.push_back(grid);
     elements.push_back(playerHeader);
 

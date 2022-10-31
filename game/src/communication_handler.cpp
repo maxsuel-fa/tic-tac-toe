@@ -14,7 +14,7 @@
 CommunicationHandler::CommunicationHandler(void)
 {
     // Creating the client socket
-    socket_ = socket(AF_INET, SOCK_STREAM, 0);
+    socket_ = ::socket(AF_INET, SOCK_STREAM, 0);
     if (socket_ < 0)
     {
         std::cerr << "Error in creating the client socket!" << std::endl;
@@ -33,6 +33,11 @@ CommunicationHandler::~CommunicationHandler()
     close(CommunicationHandler::socket_);
 }
 
+int const& CommunicationHandler::socket()
+{
+    return socket_;
+}
+
 void CommunicationHandler::connectWithServer()
 {
     std::cout << "Connecting with the server..." << std::endl;
@@ -47,16 +52,20 @@ void CommunicationHandler::connectWithServer()
 
 void CommunicationHandler::waitOpponent(Player& player)
 {
+    std::mutex changeMutex;
     char aux[256];
     memset(&aux, 0, sizeof(aux));
 
     int nrecv;
     do
     {
+        std::lock_guard<std::mutex> lock(changeMutex);
         nrecv = recv(socket_, aux, sizeof(aux), 0);
-        aux[nrecv] = '\0';
+        if (nrecv >= 0)
+            aux[nrecv] = '\0';
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-    while (!strcmp(aux, "X") && !strcmp(aux, "O") && nrecv >= 0);
+    while (strcmp(aux, "X") && strcmp(aux, "O"));
 
     if (nrecv < 0)
     {
@@ -70,38 +79,41 @@ void CommunicationHandler::waitOpponent(Player& player)
 
 void CommunicationHandler::sendChange(Player& player, std::string const& change)
 {
+    std::mutex changeMutex;
     // Just send valid changes
     while (!change.compare("invalid"));
 
     int nsent;
     while (player.playing)
     {
+        std::cout << change << std::endl;
         nsent = send(socket_, change.c_str(), sizeof(change.c_str()), 0);
         if (nsent < 0)
         {
+            std::lock_guard<std::mutex> lock(changeMutex);
             std::cerr << "Erro in sending update" << std::endl;
             exit(EXIT_FAILURE);
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
     }
 }
 
 void CommunicationHandler::receiveChange(Player& player, std::string& change)
 {
-    // Just for test
     std::mutex changeMutex;
-    //char aux[256];
-    //memset(&aux, 0, sizeof(aux));
-    player.playing = true;
+    char aux[256];
+    memset(&aux, 0, sizeof(aux));
+
     int nrecv = 1;
     do
     {
-        //nrecv = recv(socket_, aux, sizeof(aux), 0);
-        //aux[nrecv] = '\0';
+        nrecv = recv(socket_, aux, sizeof(aux), 0);
+        aux[nrecv] = '\0';
         if (nrecv > 0)
         {
             std::lock_guard<std::mutex> lock(changeMutex);
             change.clear();
-            change.append("Test");
+            change.append(aux);
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
     }

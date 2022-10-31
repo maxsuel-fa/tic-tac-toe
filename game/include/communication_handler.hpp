@@ -16,6 +16,7 @@ public:
     CommunicationHandler();
     ~CommunicationHandler();
 
+    int const& socket(void);
     void connectWithServer(void);
     void waitOpponent(Player&);
     void sendChange(Player& , std::string const&);
