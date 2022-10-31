@@ -1,6 +1,8 @@
 #ifndef _MATCH_
 #define _MATCH_
 
+#include <unistd.h>
+
 // C includes
 #include <sys/socket.h>
 
@@ -26,7 +28,8 @@ public:
 
     // Class destructor.
     ~Match() {
-
+        close(player1Socket);
+        close(player2Socket);
     }
 
     // Getters
@@ -114,12 +117,16 @@ public:
                                            // receive a 'W' and the move
                     send(player2Socket, gameOverMess, 5, 0);
                 }
-                
+
                 break;
             }
             send(player1Socket, move, 5, 0);
             send(player2Socket, move, 5, 0);
         }
+
+        // close(player1Socket);
+        // close(player2Socket);
+        this->~Match();
 
         return;
     }
