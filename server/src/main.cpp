@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 
         if(matchesCount < 10) {
             matches[matchesCount] = createMatch(player1Socket, player2Socket);
-            threads[matchesCount](matches[matchesCount]->gameLoop());
+            threads[matchesCount] = std::thread(&Match::gameLoop, std::ref(matches[matchesCount]));
             matchesCount++;
         }
     }
