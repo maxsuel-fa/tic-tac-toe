@@ -36,10 +36,10 @@ CommunicationHandler::~CommunicationHandler()
 void CommunicationHandler::connectWithServer()
 {
     std::cout << "Connecting with the server..." << std::endl;
-    if (connect(socket_, (struct sockaddr* )&socket_, sizeof(serverAddress_)) < 0)
+    while (connect(socket_, (struct sockaddr* )&serverAddress_, sizeof(serverAddress_)) < 0)
     {
         std::cerr << "Error in connecting with the server" << std::endl;
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
 
     std::cout << "Success in connecting to the server!" << std::endl;
