@@ -67,16 +67,14 @@ public:
 
 class Player
 {
-    std::string name_;
-    int number_;
+    std::string symbol_;
 
 public:
     Player() = default;
-    Player(std::string const&, int const&);
+    Player(std::string const&);
 
-    void name(std::string const&);
-    std::string const& name(void);
-    void number(int const&);
-    int const& number(void);
+    void symbol(std::string const&);
+    std::string const& symbol(void);
+    bool playing;
 };
 #endif

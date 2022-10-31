@@ -5,11 +5,18 @@
 
 #include<iostream>
 #include <cstdlib>
+#include <thread>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include "../include/screen.hpp"
 #include "../include/screen_init.hpp"
+#include "../include/communication_handler.hpp"
+
+#define MENU 0
+#define WAITING 1
+#define PLAYING 3
+
 int main(void)
 {
     // Initializing the SDL library
@@ -61,22 +68,76 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
+    // Communication Handler
+    CommunicationHandler cHandler;
+
     // Instantiating the screens of the game
     Screen menuScreen(menuScreenInit(windowWidth, windowHeight, renderer));
-    Screen waitingScreen(waitingScreenInit(windowWidth, windowHeight, renderer)); 
+    Screen waitingScreen(waitingScreenInit(windowWidth, windowHeight, renderer));
+    Screen playingScreen(playingScreenInit(windowWidth, windowHeight, renderer));
+
+    // Player
+    Player player;
+    std::string recv, send;
+
+
+    // Threads to send and receive changes
+    std::thread tSend(&CommunicationHandler::sendChange, std::ref(cHandler),
+                      std::ref(player), std::ref(send));
+    std::thread tRecv(&CommunicationHandler::receiveChange, std::ref(cHandler),
+                      std::ref(player), std::ref(recv));
+    //std::thread tWait(&CommunicationHandler::waitOpponent, std::ref(cHandler),
+    //                  std::ref(player));
     // Game loop
     SDL_bool close(SDL_FALSE);
     SDL_Event event;
+    int xMouse, yMouse;
+    int xAux, yAux;
+    int gameStatus = MENU;
+
     while (!close)
     {
+        // Dealing with events
         while (SDL_PollEvent(&event) && !close)
+        {
             if (event.type == SDL_QUIT)
                 close = SDL_TRUE;
+            else if (event.type == SDL_MOUSEBUTTONDOWN)
+            {
+                SDL_GetMouseState(&xMouse, &yMouse);
+                break;
+            }
+        }
 
+        // Sending and receiving changes
+
+        // Cleaning the screen
         SDL_SetRenderDrawColor(renderer, 0x0, 0x0, 0x0, 0xFF);
         SDL_RenderClear(renderer);
-
-        waitingScreen.draw(renderer, 500);
-
+        switch (gameStatus)
+        {
+        case MENU:
+            xAux = menuScreen.elements()[2].x();
+            yAux = menuScreen.elements()[2].y();
+            if (xMouse > xAux
+                    && xMouse < xAux + menuScreen.elements()[2].width()
+                    && yMouse > yAux
+                    && yMouse < yAux + menuScreen.elements()[2].height())
+            {
+                gameStatus = WAITING;
+            }
+            menuScreen.draw(renderer);
+            break;
+        case WAITING:
+            if (player.playing)
+            {
+                //gameStatus = PLAYING;
+            }
+            std::cout << recv << std::endl;
+            waitingScreen.draw(renderer, 500);
+            break;
+        case PLAYING:
+            break;
+        }
     }
 }
