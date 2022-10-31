@@ -5,7 +5,6 @@
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
 #include <string>
-#include "../include/utils.hpp"
 
 class Drawable
 {
@@ -52,7 +51,7 @@ public:
     std::string const& text(void);
 };
 
-class Board: public Drawable
+/*class Board: public Drawable
 {
     Matrix boardMatrix_;
 
@@ -63,7 +62,7 @@ public:
           int const&, int const&);
     Matrix& boardMatrix(void);
 };
-
+*/
 
 class Player
 {

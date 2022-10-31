@@ -68,3 +68,5 @@ void loadFont(TTF_Font** font, std::string const& fontPath, int const& fontSize)
         exit(EXIT_FAILURE);
     }
 }
+
+

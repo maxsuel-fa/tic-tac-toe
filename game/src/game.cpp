@@ -17,6 +17,48 @@
 #define WAITING 1
 #define PLAYING 3
 
+#define EMPTY '$'
+
+std::pair<int, int> checkClick(Drawable& grid,
+                               int const& x, int const& y)
+{
+    std::pair<int, int> p(-1, -1);
+    int const xAux((grid.x() + grid.width()) / 3);
+    int const yAux((grid.y() + grid.height()) / 3);
+
+    if (x > grid.x() && x < xAux)
+    {
+        p.first = 0;
+        if (y > grid.y() && y < yAux)
+            p.second = 0;
+        else if (y > yAux && y < 2 * yAux)
+            p.second = 1;
+        else if (y > 2 * yAux && y < 3 * yAux)
+            p.second = 2;
+    }
+    else if (x > xAux && x < 2 * xAux)
+    {
+        p.first = 1;
+        if (y > grid.y() && y < yAux)
+            p.second = 0;
+        else if (y > yAux && y < 2 * yAux)
+            p.second = 1;
+        else if (y > 2 * yAux && y < 3 * yAux)
+            p.second = 2;
+    }
+    else if (x > 2 * xAux && x < 3 * xAux)
+    {
+        p.first = 2;
+        if (y > grid.y() && y < yAux)
+            p.second = 0;
+        else if (y > yAux && y < 2 * yAux)
+            p.second = 1;
+        else if (y > 2 * yAux && y < 3 * yAux)
+            p.second = 2;
+    }
+
+    return p;
+}
 int main(void)
 {
     // Initializing the SDL library
@@ -68,6 +110,22 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
+    // Creating a drawabel X
+    std::string const XPath("../textures/xwhite.png");
+    SDL_Texture* XTexture;
+    XTexture = IMG_LoadTexture(renderer, XPath.c_str());
+
+    // Defining coordinates and sizes for the X
+    int const XWidth(56);
+    int const XHeight(56);
+    Drawable X(XTexture, 0, 0, XWidth, XHeight);
+
+    // Creating a drawabel O
+    std::string const OPath("../textures/owhite.png");
+    SDL_Texture* OTexture;
+    OTexture = IMG_LoadTexture(renderer, OPath.c_str());
+    Drawable O(OTexture, 0, 0, XWidth, XHeight);
+
     // Communication Handler
     CommunicationHandler cHandler;
     cHandler.connectWithServer();
@@ -79,21 +137,28 @@ int main(void)
 
     // Player
     Player player;
-    std::string recv, send;
-
+    std::string recv, sendm;
 
     // Threads to send and receive changes
     std::thread tSend(&CommunicationHandler::sendChange, std::ref(cHandler),
-                      std::ref(player), std::ref(send));
+                      std::ref(player), std::ref(sendm));
     std::thread tRecv(&CommunicationHandler::receiveChange, std::ref(cHandler),
                       std::ref(player), std::ref(recv));
     std::thread tWait(&CommunicationHandler::waitOpponent, std::ref(cHandler),
                       std::ref(player));
+
+    // Grid
+    char grid[3][3];
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            grid[i][j] = EMPTY;
+
     // Game loop
     SDL_bool close(SDL_FALSE);
     SDL_Event event;
     int xMouse, yMouse;
     int xAux, yAux;
+    std::pair<int, int> pos;
     int gameStatus = MENU;
 
     while (!close)
@@ -125,6 +190,10 @@ int main(void)
                     && yMouse > yAux
                     && yMouse < yAux + menuScreen.elements()[2].height())
             {
+                sendm.clear();
+                sendm.append("#");
+                send(cHandler.socket(), sendm.c_str(),
+                     sizeof(sendm.c_str()), 0);
                 gameStatus = WAITING;
             }
             menuScreen.draw(renderer);
@@ -132,13 +201,61 @@ int main(void)
         case WAITING:
             if (player.playing)
             {
-                //gameStatus = PLAYING;
+                xAux = playingScreen.elements()[1].x()
+                       + playingScreen.elements()[1].width() + 14;
+                yAux = playingScreen.elements()[1].y() + 7;
+                if (!player.symbol().compare("X"))
+                {
+                    X.x(xAux);
+                    X.y(yAux);
+                    playingScreen.elements().push_back(X);
+                }
+                else
+                {
+                    O.x(xAux);
+                    O.y(yAux);
+                    playingScreen.elements().push_back(O);
+                }
+                gameStatus = PLAYING;
             }
-            std::cout << recv << std::endl;
+            //std::cout << player.playing << std::endl;
             waitingScreen.draw(renderer, 500);
             break;
         case PLAYING:
+            pos = checkClick(playingScreen.elements()[0], xMouse, yMouse);
+            if (pos.first > 0 && pos.second > 0 && grid[pos.first][pos.second] == EMPTY)
+            {
+                grid[pos.first][pos.second] = player.symbol().c_str()[0];
+            }
+
+            for (int i = 0; i < 3; ++i)
+            {
+                for (int j = 0; j < 3; ++j)
+                {
+                    xAux = playingScreen.elements()[0].x() + 228 * i;
+                    yAux = playingScreen.elements()[0].y() + 228 * j;
+                    if (grid[i][j] == EMPTY)
+                    {
+                        X.x(xAux);
+                        X.y(yAux);
+                        X.width(160);
+                        X.height(160);
+                        X.draw(renderer);
+                    }
+                    else if (grid[i][j] == 'O')
+                    {
+                        O.x(xAux);
+                        O.y(yAux);
+                        O.width(160);
+                        O.height(160);
+                        O.draw(renderer);
+                    }
+                }
+            }
+            playingScreen.draw(renderer);
             break;
         }
     }
+
+    return 0;
 }
