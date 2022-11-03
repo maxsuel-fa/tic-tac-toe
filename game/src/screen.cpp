@@ -246,16 +246,47 @@ std::vector<Drawable> playingScreenInit(int const& windowWidth, int const& windo
 
     return elements;
 }
+
+std::vector<Drawable> winScreenInit(int const& windowWidth, int const& windowHeight,
+                                    SDL_Renderer* renderer, std::string const& text)
+{
+    std::vector<Drawable> elements;
+
+    // Loading font to write in the playing screen
+    TTF_Font* font;
+    loadFont(&font, "../font/BadMofo.ttf", 120);
+
+    // Color to render the texts
+    SDL_Color color;
+    color = {0xFF, 0xFF, 0xFF};
+
+    // Creating a drawable win text
+    SDL_Texture* texture;
+    std::pair<int, int> sizes;
+    sizes = text2Texture(&texture, text, font, color, renderer);
+    Drawable win(texture, 0, 0,
+                 sizes.first, sizes.second);
+
+    win.x((windowWidth - win.width()) / 2 + 28);
+    win.y((windowHeight - win.height()) / 2 - 28);
+
+    elements.push_back(win);
+
+    return elements;
+
+}
+
+
 /*
- * @brief Given a text, a font and a color, build a texture with such text
- * @param texture parameter that will hold the built texture
- * @para font pointer to the font to be used in the texture building
- * @param color color to be used in the texture building
- * @param renderer renderer of the current window
- * @return pair pair of ints containing the texture width and height
- */
-std::pair<int, int> text2Texture(SDL_Texture** texture, std::string const& text, TTF_Font* font,
-                                 SDL_Color const& color, SDL_Renderer* renderer)
+* @brief Given a text, a font and a color, build a texture with such text
+* @param texture parameter that will hold the built texture
+* @para font pointer to the font to be used in the texture building
+* @param color color to be used in the texture building
+* @param renderer renderer of the current window
+* @return pair pair of ints containing the texture width and height
+*/
+std::pair<int, int> text2Texture(SDL_Texture** texture, std::string const & text, TTF_Font * font,
+                                 SDL_Color const & color, SDL_Renderer * renderer)
 {
     SDL_Surface* surface;
     surface = TTF_RenderText_Solid(font, text.c_str(), color);

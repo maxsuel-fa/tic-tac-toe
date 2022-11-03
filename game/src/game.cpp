@@ -6,6 +6,8 @@
 #include<iostream>
 #include <cstdlib>
 #include <thread>
+#include <mutex>
+#include <chrono>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
@@ -13,52 +15,18 @@
 #include "../include/screen_init.hpp"
 #include "../include/communication_handler.hpp"
 
+// Screen options
 #define MENU 0
 #define WAITING 1
 #define PLAYING 3
+#define WIN 4
+#define LOSS 5
 
-#define EMPTY '$'
+// Standart messages
+#define START_MESSAGE "#"
+#define X_SYMBOL "X"
+#define O_SYMBOL "O"
 
-std::pair<int, int> checkClick(Drawable& grid,
-                               int const& x, int const& y)
-{
-    std::pair<int, int> p(-1, -1);
-    int const xAux((grid.x() + grid.width()) / 3);
-    int const yAux((grid.y() + grid.height()) / 3);
-
-    if (x > grid.x() && x < xAux)
-    {
-        p.first = 0;
-        if (y > grid.y() && y < yAux)
-            p.second = 0;
-        else if (y > yAux && y < 2 * yAux)
-            p.second = 1;
-        else if (y > 2 * yAux && y < 3 * yAux)
-            p.second = 2;
-    }
-    else if (x > xAux && x < 2 * xAux)
-    {
-        p.first = 1;
-        if (y > grid.y() && y < yAux)
-            p.second = 0;
-        else if (y > yAux && y < 2 * yAux)
-            p.second = 1;
-        else if (y > 2 * yAux && y < 3 * yAux)
-            p.second = 2;
-    }
-    else if (x > 2 * xAux && x < 3 * xAux)
-    {
-        p.first = 2;
-        if (y > grid.y() && y < yAux)
-            p.second = 0;
-        else if (y > yAux && y < 2 * yAux)
-            p.second = 1;
-        else if (y > 2 * yAux && y < 3 * yAux)
-            p.second = 2;
-    }
-
-    return p;
-}
 int main(void)
 {
     // Initializing the SDL library
@@ -126,38 +94,42 @@ int main(void)
     OTexture = IMG_LoadTexture(renderer, OPath.c_str());
     Drawable O(OTexture, 0, 0, XWidth, XHeight);
 
-    // Communication Handler
-    CommunicationHandler cHandler;
-    cHandler.connectWithServer();
+
 
     // Instantiating the screens of the game
     Screen menuScreen(menuScreenInit(windowWidth, windowHeight, renderer));
     Screen waitingScreen(waitingScreenInit(windowWidth, windowHeight, renderer));
     Screen playingScreen(playingScreenInit(windowWidth, windowHeight, renderer));
+    Screen winScreen(winScreenInit(windowWidth, windowHeight, renderer, "YOU WIN"));
+    Screen lossScreen(winScreenInit(windowWidth, windowHeight, renderer, "YOU LOSE"));
 
-    // Player
+    // Instantiating the player
     Player player;
-    std::string recv, sendm;
+    std::string recvm, sendm;
+
+    // Communication Handler
+    CommunicationHandler cHandler;
+    cHandler.connectWithServer();
 
     // Threads to send and receive changes
-    std::thread tSend(&CommunicationHandler::sendChange, std::ref(cHandler),
-                      std::ref(player), std::ref(sendm));
-    std::thread tRecv(&CommunicationHandler::receiveChange, std::ref(cHandler),
-                      std::ref(player), std::ref(recv));
-    std::thread tWait(&CommunicationHandler::waitOpponent, std::ref(cHandler),
-                      std::ref(player));
+    //std::thread tSend(&CommunicationHandler::sendChange, std::ref(cHandler),
+    //                  std::ref(player), std::ref(sendm));
+    //std::thread tRecv(&CommunicationHandler::receiveChange, std::ref(cHandler),
+    //                  std::ref(player), std::ref(recvm));
+    //std::thread tWait(&CommunicationHandler::waitOpponent, std::ref(cHandler),
+    //                  std::ref(player));
 
     // Grid
-    char grid[3][3];
-    for (int i = 0; i < 3; ++i)
-        for (int j = 0; j < 3; ++j)
-            grid[i][j] = EMPTY;
+    Matrix grid(3, 3);
+    grid.zeros();
 
     // Game loop
     SDL_bool close(SDL_FALSE);
     SDL_Event event;
     int xMouse, yMouse;
     int xAux, yAux;
+    int widthAux, heightAux;
+    char auxMessage[256];
     std::pair<int, int> pos;
     int gameStatus = MENU;
 
@@ -168,33 +140,44 @@ int main(void)
         {
             if (event.type == SDL_QUIT)
                 close = SDL_TRUE;
-            else if (event.type == SDL_MOUSEBUTTONDOWN)
+            else if (event.type == SDL_MOUSEBUTTONUP)
             {
                 SDL_GetMouseState(&xMouse, &yMouse);
+                std::cout << xMouse << " e " << yMouse << std::endl;
                 break;
             }
         }
-
-        // Sending and receiving changes
 
         // Cleaning the screen
         SDL_SetRenderDrawColor(renderer, 0x0, 0x0, 0x0, 0xFF);
         SDL_RenderClear(renderer);
         switch (gameStatus)
         {
+        // Menu screen
         case MENU:
+            // Gets the start button coordinates and sizes
             xAux = menuScreen.elements()[2].x();
             yAux = menuScreen.elements()[2].y();
-            if (xMouse > xAux
-                    && xMouse < xAux + menuScreen.elements()[2].width()
-                    && yMouse > yAux
-                    && yMouse < yAux + menuScreen.elements()[2].height())
+            widthAux = menuScreen.elements()[2].width();
+            heightAux =  menuScreen.elements()[2].height();
+            // Check if the start button was pressed
+            if (xMouse > xAux && xMouse < xAux + widthAux
+                    && yMouse > yAux && yMouse < yAux + heightAux)
             {
+                // Sending a start message to the server
                 sendm.clear();
-                sendm.append("#");
+                sendm.append(START_MESSAGE);
                 send(cHandler.socket(), sendm.c_str(),
                      sizeof(sendm.c_str()), 0);
-                gameStatus = WAITING;
+
+                // Receiving the player's symbol from the srver
+                if (recv(cHandler.socket(), auxMessage,
+                         sizeof(auxMessage), 0) >= 0)
+                    player.symbol(auxMessage);
+
+                if (!player.symbol().compare(X_SYMBOL)
+                        || !player.symbol().compare(O_SYMBOL))
+                    gameStatus = WAITING;
             }
             menuScreen.draw(renderer);
             break;
@@ -204,7 +187,7 @@ int main(void)
                 xAux = playingScreen.elements()[1].x()
                        + playingScreen.elements()[1].width() + 14;
                 yAux = playingScreen.elements()[1].y() + 7;
-                if (!player.symbol().compare("X"))
+                if (!player.symbol().compare(X_SYMBOL))
                 {
                     X.x(xAux);
                     X.y(yAux);
@@ -218,23 +201,40 @@ int main(void)
                 }
                 gameStatus = PLAYING;
             }
-            //std::cout << player.playing << std::endl;
             waitingScreen.draw(renderer, 500);
             break;
         case PLAYING:
-            pos = checkClick(playingScreen.elements()[0], xMouse, yMouse);
-            if (pos.first > 0 && pos.second > 0 && grid[pos.first][pos.second] == EMPTY)
+            // Checking  moves made by the player
+            pos = checkClick(xMouse, yMouse);
+            if (pos.first >= 0 && pos.second >= 0
+                    && grid.data()[pos.first][pos.second] == EMPTY)
             {
-                grid[pos.first][pos.second] = player.symbol().c_str()[0];
+                //grid.data()[pos.first][pos.second] = player.symbol().c_str()[0];
+                sendm.clear();
+                sendm.append(player.symbol());
+                sendm.append(std::to_string(pos.first));
+                sendm.append(std::to_string(pos.second));
+                //std::cout << sendm << std::endl;
             }
 
+            // Updating the game grid based on the message received from the server
+            if (recvm.size() && (recvm.c_str()[0] == 'X' || recvm.c_str()[0] == 'O'))
+                grid.data()[recvm.c_str()[1] - '0'][recvm.c_str()[2] - '0'] = recvm.c_str()[0];
+
+            // Checking for win/loss
+            if (recvm.size() && recvm.c_str()[0] == 'W')
+                gameStatus = WIN;
+            else if (recvm.size() && recvm.c_str()[0] == 'L')
+                gameStatus = LOSS;
+
+            // Drawing all the symbols in the grid
             for (int i = 0; i < 3; ++i)
             {
                 for (int j = 0; j < 3; ++j)
                 {
-                    xAux = playingScreen.elements()[0].x() + 228 * i;
-                    yAux = playingScreen.elements()[0].y() + 228 * j;
-                    if (grid[i][j] == EMPTY)
+                    xAux = playingScreen.elements()[0].x() + 200 * i + 14;
+                    yAux = playingScreen.elements()[0].y() + 200 * j + 14;
+                    if (grid.data()[i][j] == 'X')
                     {
                         X.x(xAux);
                         X.y(yAux);
@@ -242,7 +242,7 @@ int main(void)
                         X.height(160);
                         X.draw(renderer);
                     }
-                    else if (grid[i][j] == 'O')
+                    else if (grid.data()[i][j] == 'O')
                     {
                         O.x(xAux);
                         O.y(yAux);
@@ -253,6 +253,12 @@ int main(void)
                 }
             }
             playingScreen.draw(renderer);
+            break;
+        case WIN:
+            winScreen.draw(renderer);
+            break;
+        case LOSS:
+            lossScreen.draw(renderer);
             break;
         }
     }

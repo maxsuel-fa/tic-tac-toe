@@ -4,6 +4,12 @@
 #include <string>
 #include <SDL2/SDL_ttf.h>
 
+#define EMPTY '$'
+#define GRID_START_X 92
+#define GRID_START_Y 134
+#define SUBGRID_WIDTH 190
+#define LINE_WIDTH 0
+
 class Matrix
 {
 public:
@@ -11,13 +17,15 @@ public:
 
     int const& row(void) const;
     int const& column(void) const;
-    void changeEntry(int const&, int const&, int const&);
+    void changeEntry(int const&, int const&, char const&);
+    char** data(void);
     void zeros(void);
 private:
     int row_;
     int column_;
-    int** data_;
+    char** data_;
 };
 
 void loadFont(TTF_Font**, std::string const&, int const&);
+std::pair<int, int> checkClick(int const&, int const&);
 #endif

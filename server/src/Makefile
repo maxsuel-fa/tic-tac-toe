@@ -1,13 +1,13 @@
 CC=g++
 IDIR=../include
-CFLAGS=-I$(IDIR)
+CFLAGS=-I$(IDIR) -pthread
 
 ODIR=obj
 
-_DEPS=utils.hpp entities.hpp
+_DEPS=player_handler.hpp communication_handler.hpp
 DEPS=$(patsubst %, $(IDIR)/%, $(_DEPS))
 
-_OBJ =main.o utils.o entities.o
+_OBJ =server.o player_handler.o communication_handler.o
 OBJ=$(patsubst %, $(ODIR)/%, $(_OBJ))
 
 all: server

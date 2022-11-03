@@ -69,11 +69,11 @@ class Player
     std::string symbol_;
 
 public:
-    Player() = default;
-    Player(std::string const&);
+    Player(void);
 
     void symbol(std::string const&);
     std::string const& symbol(void);
     bool playing;
+    bool myTurn;
 };
 #endif

@@ -29,4 +29,5 @@ std::vector<Drawable> waitingScreenInit(int const&, int const&, SDL_Renderer*);
 std::pair<int, int> text2Texture(SDL_Texture**, std::string const&, TTF_Font*,
                                  SDL_Color const&, SDL_Renderer*);
 std::vector<Drawable> playingScreenInit(int const&, int const&, SDL_Renderer*);
+std::vector<Drawable> winScreenInit(int const&, int const&, SDL_Renderer*, std::string const&);
 #endif

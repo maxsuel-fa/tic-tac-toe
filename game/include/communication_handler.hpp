@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include "./entities.hpp"
+#define OK "#"
 
 class CommunicationHandler
 {

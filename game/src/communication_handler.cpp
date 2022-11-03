@@ -44,7 +44,7 @@ void CommunicationHandler::connectWithServer()
     while (connect(socket_, (struct sockaddr* )&serverAddress_, sizeof(serverAddress_)) < 0)
     {
         std::cerr << "Error in connecting with the server" << std::endl;
-        //exit(EXIT_FAILURE);
+        std::cout << "Trying to connect again..." << std::endl;
     }
 
     std::cout << "Success in connecting to the server!" << std::endl;
@@ -73,6 +73,14 @@ void CommunicationHandler::waitOpponent(Player& player)
         exit(EXIT_FAILURE);
     }
 
+    char startCheck[2];
+    do
+    {
+        send(socket_, aux, 2, 0);
+        recv(socket_, startCheck, 2, 0);
+    }
+    while (strcmp(startCheck, OK));
+
     player.symbol(aux);
     player.playing = true;
 }
@@ -80,21 +88,20 @@ void CommunicationHandler::waitOpponent(Player& player)
 void CommunicationHandler::sendChange(Player& player, std::string const& change)
 {
     std::mutex changeMutex;
-    // Just send valid changes
-    while (!change.compare("invalid"));
+
 
     int nsent;
     while (player.playing)
     {
-        std::cout << change << std::endl;
-        nsent = send(socket_, change.c_str(), sizeof(change.c_str()), 0);
+        
+        std::lock_guard<std::mutex> lock(changeMutex);
+        nsent = send(socket_, change.c_str(), 5, 0);
         if (nsent < 0)
         {
-            std::lock_guard<std::mutex> lock(changeMutex);
             std::cerr << "Erro in sending update" << std::endl;
-            exit(EXIT_FAILURE);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            //exit(EXIT_FAILURE);
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
 
@@ -107,15 +114,20 @@ void CommunicationHandler::receiveChange(Player& player, std::string& change)
     int nrecv = 1;
     do
     {
-        nrecv = recv(socket_, aux, sizeof(aux), 0);
+        aux[0] = '\0';
+        std::lock_guard<std::mutex> lock(changeMutex);
+        while (aux[0] != 'O' && aux[0] != 'X')
+        {
+            nrecv = recv(socket_, aux, sizeof(aux), 0);
+        }
         aux[nrecv] = '\0';
         if (nrecv > 0)
         {
-            std::lock_guard<std::mutex> lock(changeMutex);
             change.clear();
             change.append(aux);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
     while (player.playing);
 }
