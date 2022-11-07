@@ -2,10 +2,7 @@
  * @brief Methods to handle with the comunication between the
  * server and the game
  */
-
-#include <cstdlib>
 #include <unistd.h>
-#include <mutex>
 #include <chrono>
 #include <thread>
 
@@ -50,84 +47,29 @@ void CommunicationHandler::connectWithServer()
     std::cout << "Success in connecting to the server!" << std::endl;
 }
 
-void CommunicationHandler::waitOpponent(Player& player)
+/*void CommunicationHandler::waitOpponent(std::mutex mutex, Player& player)
 {
-    std::mutex changeMutex;
-    char aux[256];
-    memset(&aux, 0, sizeof(aux));
-
-    int nrecv;
+    char reciever[5];
+    memset(&reciever, 0, sizeof(reciever));
     do
     {
-        std::lock_guard<std::mutex> lock(changeMutex);
-        nrecv = recv(socket_, aux, sizeof(aux), 0);
-        if (nrecv >= 0)
-            aux[nrecv] = '\0';
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        recv(socket_, reciever, sizeof(reciever), 0);
     }
-    while (strcmp(aux, "X") && strcmp(aux, "O"));
-
-    if (nrecv < 0)
-    {
-        std::cerr << "Error in connecting with a second player" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    char startCheck[2];
-    do
-    {
-        send(socket_, aux, 2, 0);
-        recv(socket_, startCheck, 2, 0);
-    }
-    while (strcmp(startCheck, OK));
-
-    player.symbol(aux);
+    while (strcmp(reciever, START_MESSAGE));
     player.playing = true;
-}
+}*/
 
-void CommunicationHandler::sendChange(Player& player, std::string const& change)
+void CommunicationHandler::sendChange(std::string const& sendm)
 {
-    std::mutex changeMutex;
-
-
-    int nsent;
-    while (player.playing)
-    {
-        
-        std::lock_guard<std::mutex> lock(changeMutex);
-        nsent = send(socket_, change.c_str(), 5, 0);
-        if (nsent < 0)
-        {
-            std::cerr << "Erro in sending update" << std::endl;
-            //exit(EXIT_FAILURE);
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
+    send(socket_, sendm.c_str(), sizeof(sendm.c_str()), 0);
 }
 
-void CommunicationHandler::receiveChange(Player& player, std::string& change)
+void CommunicationHandler::recieveChange(std::string& recvm)
 {
-    std::mutex changeMutex;
-    char aux[256];
-    memset(&aux, 0, sizeof(aux));
-
-    int nrecv = 1;
-    do
-    {
-        aux[0] = '\0';
-        std::lock_guard<std::mutex> lock(changeMutex);
-        while (aux[0] != 'O' && aux[0] != 'X')
-        {
-            nrecv = recv(socket_, aux, sizeof(aux), 0);
-        }
-        aux[nrecv] = '\0';
-        if (nrecv > 0)
-        {
-            change.clear();
-            change.append(aux);
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
-    while (player.playing);
+    char reciever[5];
+    memset(&reciever, 0, sizeof(reciever));
+    recv(socket_, reciever, sizeof(reciever), 0);
+    recvm.clear();
+    recvm.append(reciever);
 }
+

@@ -72,7 +72,7 @@ public:
     Player(void);
 
     void symbol(std::string const&);
-    std::string const& symbol(void);
+    std::string& symbol(void);
     bool playing;
     bool myTurn;
 };

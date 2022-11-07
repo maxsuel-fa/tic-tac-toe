@@ -6,29 +6,37 @@
 #include<iostream>
 #include <cstdlib>
 #include <thread>
-#include <mutex>
-#include <chrono>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
-#include "../include/screen.hpp"
-#include "../include/screen_init.hpp"
-#include "../include/communication_handler.hpp"
 
-// Screen options
-#define MENU 0
-#define WAITING 1
-#define PLAYING 3
-#define WIN 4
-#define LOSS 5
-
-// Standart messages
-#define START_MESSAGE "#"
-#define X_SYMBOL "X"
-#define O_SYMBOL "O"
+#include "../include/game_gi.hpp"
+#include "../include/game_engine.hpp"
 
 int main(void)
 {
+    // Object that runs the graphical interface of the game
+    Game_GI game_gi;
+
+    // Variable used in the graphical interface
+    bool closeWindow(false);
+    std::mutex giMutex;
+    
+    // The variables beneath will be shared between
+    // the graphical interface and the engine
+    int xClick(0), yClick(0);
+    int gameScreen(START_SCREEN);
+
+    // Thread to run the graphical interface
+    std::thread game_gi_thread(&Game_GI::run,
+                               std::ref(game_gi),
+                               std::ref(giMutex),
+                               std::ref(gameScreen),
+                               std::ref(xClick),
+                               std::ref(yClick),
+                               std::ref(closeWindow));
+
+    // Function that runs the engine of the game
+    Engine::run(giMutex, xClick, yClick, game_gi, gameScreen, closeWindow);
+    /*
     // Initializing the SDL library
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -112,13 +120,12 @@ int main(void)
     cHandler.connectWithServer();
 
     // Threads to send and receive changes
+    std::thread tWait(&CommunicationHandler::waitOpponent, std::ref(cHandler),
+                      std::ref(player));
     //std::thread tSend(&CommunicationHandler::sendChange, std::ref(cHandler),
-    //                  std::ref(player), std::ref(sendm));
-    //std::thread tRecv(&CommunicationHandler::receiveChange, std::ref(cHandler),
-    //                  std::ref(player), std::ref(recvm));
-    //std::thread tWait(&CommunicationHandler::waitOpponent, std::ref(cHandler),
-    //                  std::ref(player));
-
+                    //  std::ref(player), std::ref(sendm));
+    std::thread tRecv(&CommunicationHandler::recieveChange, std::ref(cHandler),
+                      std::ref(player), std::ref(recvm));
     // Grid
     Matrix grid(3, 3);
     grid.zeros();
@@ -129,7 +136,7 @@ int main(void)
     int xMouse, yMouse;
     int xAux, yAux;
     int widthAux, heightAux;
-    char auxMessage[256];
+    char auxMessage[5];
     std::pair<int, int> pos;
     int gameStatus = MENU;
 
@@ -182,8 +189,10 @@ int main(void)
             menuScreen.draw(renderer);
             break;
         case WAITING:
+            // Check if the match started
             if (player.playing)
             {
+                // Getting the player header position
                 xAux = playingScreen.elements()[1].x()
                        + playingScreen.elements()[1].width() + 14;
                 yAux = playingScreen.elements()[1].y() + 7;
@@ -204,27 +213,30 @@ int main(void)
             waitingScreen.draw(renderer, 500);
             break;
         case PLAYING:
-            // Checking  moves made by the player
+            // Checking  if the move made by the player is valid
+            // If so, send this move to the server
             pos = checkClick(xMouse, yMouse);
             if (pos.first >= 0 && pos.second >= 0
                     && grid.data()[pos.first][pos.second] == EMPTY)
             {
-                //grid.data()[pos.first][pos.second] = player.symbol().c_str()[0];
                 sendm.clear();
                 sendm.append(player.symbol());
                 sendm.append(std::to_string(pos.first));
                 sendm.append(std::to_string(pos.second));
-                //std::cout << sendm << std::endl;
+                cHandler.sendChange(player, sendm);
             }
 
             // Updating the game grid based on the message received from the server
-            if (recvm.size() && (recvm.c_str()[0] == 'X' || recvm.c_str()[0] == 'O'))
-                grid.data()[recvm.c_str()[1] - '0'][recvm.c_str()[2] - '0'] = recvm.c_str()[0];
+            if (!recvm.empty() && (!recvm.find_first_of(X_SYMBOL)
+                    || !recvm.find_first_of(O_SYMBOL)))
+            {
+                grid.changeEntry(atoi(&recvm[1]), atoi(&recvm[2]), recvm[0]);
+            }
 
             // Checking for win/loss
-            if (recvm.size() && recvm.c_str()[0] == 'W')
+            if (!recvm.empty() && recvm[0] == WIN_SYMBOL)
                 gameStatus = WIN;
-            else if (recvm.size() && recvm.c_str()[0] == 'L')
+            else if (!recvm.empty() && recvm[0] == LOSS_SYMBOL)
                 gameStatus = LOSS;
 
             // Drawing all the symbols in the grid
@@ -234,7 +246,7 @@ int main(void)
                 {
                     xAux = playingScreen.elements()[0].x() + 200 * i + 14;
                     yAux = playingScreen.elements()[0].y() + 200 * j + 14;
-                    if (grid.data()[i][j] == 'X')
+                    if (grid.data()[i][j] == EMPTY)
                     {
                         X.x(xAux);
                         X.y(yAux);
@@ -261,7 +273,7 @@ int main(void)
             lossScreen.draw(renderer);
             break;
         }
-    }
-
+    }*/
+    game_gi_thread.join();
     return 0;
 }

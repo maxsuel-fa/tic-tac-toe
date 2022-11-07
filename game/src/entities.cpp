@@ -150,7 +150,7 @@ void Player::symbol(std::string const& symbol)
  * @brief gets the symbol attribute of the player
  * @return string& reference to the symbol attribute
  */
-std::string const& Player::symbol()
+std::string& Player::symbol()
 {
     return symbol_;
 }

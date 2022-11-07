@@ -8,6 +8,7 @@
  */
 Screen::Screen(std::vector<Drawable> const& elements)
     : elements_(elements) {}
+
 /*
  * @brief gets the elements list of the screen object
  * @return vector the elements list of the screen
@@ -19,7 +20,7 @@ std::vector<Drawable>& Screen::elements(void)
 
 /*
  * @brief draws all the elements of the screen
- * @param renderer the ..
+ * @param renderer the renderer of the current window
  */
 void Screen::draw(SDL_Renderer* const& renderer)
 {
