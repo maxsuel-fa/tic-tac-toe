@@ -66,17 +66,6 @@ void Game_GI::run(std::mutex& mutex, int& gameScreen,
                   int& xClick, int& yClick,
                   bool& closeWindow)
 {
-    /*int const startButtonX(screens_[0].elements()[2].x());
-    int const startButtonY(screens_[0].elements()[2].y());
-    int const startButtonWidth(screens_[0].elements()[2].width());
-    int const startButtonHeight(200);
-
-    while(!(mouseX > startButtonX && mouseX < startButtonX + startButtonWidth
-            && mouseY > startButtonY && mouseY < startButtonY + startButtonHeight))
-    {
-        screens_[0].draw(renderer_);
-    }
-    */
     window_ = SDL_CreateWindow("Tic-Tac-Toe",
                                SDL_WINDOWPOS_UNDEFINED,
                                SDL_WINDOWPOS_UNDEFINED,
@@ -111,6 +100,14 @@ void Game_GI::run(std::mutex& mutex, int& gameScreen,
     screens_.push_back(playingScreen);
     screens_.push_back(winnerScreen);
     screens_.push_back(loserScreen);
+    
+    // Coordinates for the symbol
+    int const x(screens_[PLAYING_SCREEN].elements()[1].x()
+                + screens_[PLAYING_SCREEN].elements()[1].width()
+                + 14);
+    int const y(screens_[PLAYING_SCREEN].elements()[1].y() + 7);
+    int const width(56);
+    int const heigth(56);
 
     while (!closeWindow)
     {
@@ -129,16 +126,36 @@ void Game_GI::run(std::mutex& mutex, int& gameScreen,
             break;
         case TRANSITION_SCREEN_PLAYER_X:
             // Inserting the player's symbol in the playing screen
-            screens_[PLAYING_SCREEN].elements().push_back(symbol("X"));
+            screens_[PLAYING_SCREEN].elements().push_back(symbol("X",
+                    x, y,
+                    width,
+                    heigth));
             gameScreen = PLAYING_SCREEN;
             break;
         case TRANSITION_SCREEN_PLAYER_O:
             // Inserting the player's symbol in the playing screen
-            screens_[PLAYING_SCREEN].elements().push_back(symbol("O"));
+            screens_[PLAYING_SCREEN].elements().push_back(symbol("O",
+                    x, y,
+                    width,
+                    heigth));
             gameScreen = PLAYING_SCREEN;
             break;
         case PLAYING_SCREEN:
             screens_[PLAYING_SCREEN].draw(renderer_);
+            break;
+        case UPDATE_SCREEN_X:
+            screens_[PLAYING_SCREEN].elements().push_back(symbol("X",
+                    xClick, yClick,
+                    160,
+                    160));
+            gameScreen = PLAYING_SCREEN;
+            break;
+        case UPDATE_SCREEN_O:
+            screens_[PLAYING_SCREEN].elements().push_back(symbol("O",
+                    xClick, yClick,
+                    160,
+                    160));
+            gameScreen = PLAYING_SCREEN;
             break;
         case WINNER_SCREEN:
             screens_[WINNER_SCREEN].draw(renderer_);
@@ -167,14 +184,10 @@ void Game_GI::eventHandler(int& xClick, int& yClick, bool& closeWindow)
     }
 }
 
-Drawable Game_GI::symbol(std::string const& symbol)
+Drawable Game_GI::symbol(std::string const& symbol,
+                int const& x, int const& y,
+                int const& width, int const& heigth)
 {
-    // Coordinates for the symbol
-    int const x(screens_[PLAYING_SCREEN].elements()[1].x()
-                + screens_[PLAYING_SCREEN].elements()[1].width()
-                + 14);
-    int const y(screens_[PLAYING_SCREEN].elements()[1].y() + 14);
-
     // Path to the png of the symbol
     std::string path;
     if (!symbol.compare("X"))
@@ -187,5 +200,5 @@ Drawable Game_GI::symbol(std::string const& symbol)
     }
     SDL_Texture* texture;
     texture = IMG_LoadTexture(renderer_, path.c_str());
-    return Drawable(texture, x, y, 56, 56);
+    return Drawable(texture, x, y, width, heigth);
 }

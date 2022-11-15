@@ -17,8 +17,10 @@
 #define PLAYING_SCREEN 2
 #define TRANSITION_SCREEN_PLAYER_X 3
 #define TRANSITION_SCREEN_PLAYER_O 4
-#define WINNER_SCREEN  5
-#define LOSER_SCREEN   6
+#define UPDATE_SCREEN_X 5
+#define UPDATE_SCREEN_O 6
+#define WINNER_SCREEN  7
+#define LOSER_SCREEN   8
 
 class Game_GI
 {
@@ -36,6 +38,10 @@ public:
     std::vector<Screen>& screens(void);
     void run(std::mutex&, int&, int&, int&, bool&);
     void eventHandler(int&, int&, bool&);
-    Drawable symbol(std::string const&);
+    Drawable symbol(std::string const&, int const&,
+                    int const&, int const&, int const&);
 };
+
+
+
 #endif

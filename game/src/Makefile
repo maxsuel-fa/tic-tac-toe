@@ -15,6 +15,7 @@ all: test
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
+
 test: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
@@ -22,5 +23,5 @@ run:
 	./test
 
 clear:
-	rm $(ODIR)/*.o
+	rm $(ODIR)/*.o & rm test
 

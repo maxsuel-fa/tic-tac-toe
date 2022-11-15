@@ -64,12 +64,19 @@ void CommunicationHandler::sendChange(std::string const& sendm)
     send(socket_, sendm.c_str(), sizeof(sendm.c_str()), 0);
 }
 
-void CommunicationHandler::recieveChange(std::string& recvm)
+void CommunicationHandler::recieveChange(std::mutex& mutex, std::string& recvm,
+        bool const& closeWindow)
 {
     char reciever[5];
     memset(&reciever, 0, sizeof(reciever));
-    recv(socket_, reciever, sizeof(reciever), 0);
-    recvm.clear();
-    recvm.append(reciever);
-}
+    while (!closeWindow)
+    {
+        mutex.lock();
+        recv(socket_, reciever, sizeof(reciever), 0);
+        recvm.clear();
+        recvm.append(reciever);
+        mutex.unlock();
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
 
+}

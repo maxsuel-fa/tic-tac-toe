@@ -34,6 +34,6 @@ public:
     void connectWithServer(void);
     //void waitOpponent(Player&);
     void sendChange(std::string const&);
-    void recieveChange(std::string&);
+    void recieveChange(std::mutex&, std::string&, bool const&);
 };
 #endif

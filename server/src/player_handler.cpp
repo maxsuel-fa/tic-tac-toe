@@ -6,7 +6,8 @@
 
 PlayerHandler::PlayerHandler(void)
     : socket_(0) 
-    , hasOpponent_(false) {}
+    , hasOpponent_(false)
+    , symbol_("") {}
 
 void PlayerHandler::waitStartMessage(PlayerHandler& opponent)
 {
@@ -18,12 +19,11 @@ void PlayerHandler::waitStartMessage(PlayerHandler& opponent)
     }
     while (strcmp(receiver, START_MESSAGE));
 
-    std::string symbol;
     if (!hasOpponent_)
-        symbol.append("X");
+        symbol_.append("X");
     else
-        symbol.append("O");
-    send(socket_, symbol.c_str(), sizeof(symbol.c_str()), 0);
+        symbol_.append("O");
+    send(socket_, symbol_.c_str(), sizeof(symbol_.c_str()), 0);
     opponent.hasOpponent(true);
 }
 
@@ -40,4 +40,19 @@ int const& PlayerHandler::socket(void)
 void PlayerHandler::hasOpponent(bool const& hasOpponent)
 {
     hasOpponent_ = hasOpponent;
+}
+
+bool const& PlayerHandler::hasOpponent(void)
+{
+    return hasOpponent_;
+}
+
+std::string const& PlayerHandler::symbol(void)
+{
+    return symbol_;
+}
+
+void PlayerHandler::symbol(std::string const& symbol)
+{
+    symbol_ = symbol;
 }
